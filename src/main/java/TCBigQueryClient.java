@@ -35,7 +35,7 @@ public class TCBigQueryClient {
 	    // [START run_query]
 	    
 	    QueryJobConfiguration queryConfig =
-	        QueryJobConfiguration.newBuilder(TCBigQueryContract.SessionDataEntry.END_EARLY_QUERY)
+	        QueryJobConfiguration.newBuilder(TCBigQueryContract.SessionDataEntry.COMPLETE_QUERY)
 	            .setUseLegacySql(true) //This is whatever I've been using online, so I'm going to stick with it
 	            .build();
 
