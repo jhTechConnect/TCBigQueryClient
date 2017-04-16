@@ -22,5 +22,10 @@
   		<artifactId>google-cloud-bigquery</artifactId>
   		<version>0.11.0-beta</version>
   	</dependency>
+  	<dependency>
+	  <groupId>com.opencsv</groupId>
+	  <artifactId>opencsv</artifactId>
+	  <version>3.9</version>
+	</dependency>
   </dependencies>
 </project>
