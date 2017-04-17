@@ -35,7 +35,7 @@ public class TCBigQueryClient {
 	    // [START run_query]
 	    
 	    QueryJobConfiguration queryConfig =
-	        QueryJobConfiguration.newBuilder(TCBigQueryContract.SessionDataEntry.COMPLETE_QUERY)
+	        QueryJobConfiguration.newBuilder(TCBigQueryContract.SessionDataEntry.ALL_EVENTS_DAILY_COUNT)
 	            .setUseLegacySql(true) //This is whatever I've been using online, so I'm going to stick with it
 	            .build();
 
@@ -60,7 +60,7 @@ public class TCBigQueryClient {
 	    QueryResult result = response.getResult();
 	    
 	    //Prepare CSVWriter in order to write output
-	    File file = new File(EXPORT_DIRECTORY, "EndEarly.csv");
+	    File file = new File(EXPORT_DIRECTORY, "TotalCount.csv");
 	    CSVWriter writer = new CSVWriter(new FileWriter(file));
 	    List<Field> fields = result.getSchema().getFields();
 	    

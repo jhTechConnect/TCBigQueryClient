@@ -25,6 +25,27 @@ public class TCBigQueryContract {
 			"WHERE event_dim.name = 'session_complete' AND event_dim.params.key = 'item_id' " +
 			"GROUP BY day " +
 			"ORDER BY day";	
+		
+		public static final String ALL_EVENTS_DAILY_COUNT = "SELECT day2 as Day ,COALESCE(INTEGER(count3),0) as EarlyCount, CompleteCount, " +
+				"FROM " +
+				"(SELECT day2, COALESCE(INTEGER(count1),0) as CompleteCount " +
+				    "FROM (SELECT date(day) as day2 FROM org_techconnect_ANDROID.date_range) t2 " +
+				    "LEFT JOIN " +
+				   "(SELECT date(event_dim.timestamp_micros) as day1, count(*) as count1, " +
+				    "FROM " + 
+				    "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('2017-03-01'), TIMESTAMP('2017-04-01')) " +
+				    "WHERE event_dim.name = 'session_complete' AND event_dim.params.key = 'item_id' " +
+				    "GROUP BY day1 " +
+				    "Order BY day1) t1 " +
+				    "ON t1.day1 = t2.day2) joined " +
+				  "LEFT JOIN " +
+				  "(SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3, " +
+				  "FROM " + 
+				  "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('2017-03-01'), TIMESTAMP('2017-04-01')) " +
+				  "WHERE event_dim.name = 'session_end_early' AND event_dim.params.key = 'item_id' " +
+				  "GROUP BY day3 " +
+				  "Order BY day3) t3 " +
+				  "ON joined.day2 = t3.day3";
 	}
 	
 	public static class UserDataEntry {
