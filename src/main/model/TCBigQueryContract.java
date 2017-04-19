@@ -33,7 +33,7 @@ public class TCBigQueryContract {
 				    "LEFT JOIN " +
 				   "(SELECT date(event_dim.timestamp_micros) as day1, count(*) as count1, " +
 				    "FROM " + 
-				    "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('2017-03-01'), TIMESTAMP('2017-04-01')) " +
+				    "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
 				    "WHERE event_dim.name = 'session_complete' AND event_dim.params.key = 'item_id' " +
 				    "GROUP BY day1 " +
 				    "Order BY day1) t1 " +
@@ -41,7 +41,7 @@ public class TCBigQueryContract {
 				  "LEFT JOIN " +
 				  "(SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3, " +
 				  "FROM " + 
-				  "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('2017-03-01'), TIMESTAMP('2017-04-01')) " +
+				  "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
 				  "WHERE event_dim.name = 'session_end_early' AND event_dim.params.key = 'item_id' " +
 				  "GROUP BY day3 " +
 				  "Order BY day3) t3 " +
@@ -50,6 +50,11 @@ public class TCBigQueryContract {
 	
 	public static class UserDataEntry {
 		
-		public static final String UNIQUE_USER_QUERY = "";
+		//Use this info to get a list of the unique user IDs. This can then be used to generate specific metrics for each user
+		public static final String LIST_UNIQUE_USER = "SELECT user_dim.app_info.app_instance_id as User, user_dim.device_info. " + 
+		"mobile_marketing_name as DeviceName, user_dim.device_info.platform_version as Version " +
+		"FROM " +
+		"TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
+		"GROUP BY User, DeviceName, Version";
 	}
 }
