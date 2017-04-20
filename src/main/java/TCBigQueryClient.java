@@ -34,14 +34,74 @@ public class TCBigQueryClient {
 		BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
 	    // [END create_client]
 		
-		//Get list of unique users
-		List<User> users = getUserList(bigquery,"2017-03-01","2017-04-07");
-		for (User u : users) {
-			System.out.println(u.getId());
-		}
-	    
+		//Complete all population-based metrics for the study
 		//Write all session events to CSV file
 	    writeAllSessionEvents(bigquery,"2017-03-01","2017-04-07");
+	    
+	    //Complete all individual-based data
+		//Get list of unique users
+		List<User> users = getUserList(bigquery,"2017-03-01","2017-04-01");
+		
+		//Use ids to get all info related to individual technician
+		for (User u : users) {
+			System.out.println(u.getId());
+			writeUserUsageData(bigquery,u.getId(),"2017-03-01","2017-04-01");
+		}
+	
+	    
+		
+	}
+	
+	private static void writeUserUsageData(BigQuery bigquery, String id, String startDate, String endDate) {
+		//Get all sessions based on session_start
+		String query = String.format(TCBigQueryContract.GeneralInfoEntry.ALL_USER_INFO_SESSIONS, startDate, endDate, id, startDate, endDate, id);
+		
+		QueryResult result;
+		
+		try {
+			result = completeQuery(bigquery,query);
+			//Prepare CSVWriter in order to write output
+		    File file = new File(EXPORT_DIRECTORY, String.format("%s.csv",id));
+		    CSVWriter writer = new CSVWriter(new FileWriter(file));
+		    List<Field> fields = result.getSchema().getFields();
+		    
+		    //Get the column names of the result
+		    ArrayList<String> dataRow = new ArrayList<String>();
+		    for (Field f : fields) {
+		    	dataRow.add(f.getName());
+		    }
+		    String[] dataRowArray = new String[dataRow.size()];
+		    dataRowArray = dataRow.toArray(dataRowArray);
+		    writer.writeNext(dataRowArray);
+		    dataRow.clear();
+		    
+		    while (result != null) {
+		    	  Iterator<List<FieldValue>> iter = result.iterateAll();
+		    	  while (iter.hasNext()) {
+		    	    List<FieldValue> row = iter.next();
+		    	    
+		    	    for (int i = 0; i < row.size() - 1; i++) {
+	    	    		dataRow.add(row.get(i).getStringValue());
+		    	    }
+		    	    
+		    	    if (dataRow.get(0).equals("session_start")) {
+		    	    	dataRow.add("");
+		    	    } else {
+		    	    	dataRow.add(row.get(4).getStringValue());
+		    	    }
+		    	    
+		    	    dataRowArray = new String[dataRow.size()];
+				    dataRowArray = dataRow.toArray(dataRowArray);
+				    writer.writeNext(dataRowArray);
+				    dataRow.clear();
+		    	  }
+		    	  result = result.getNextPage();
+		    }
+		    
+		    writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -115,7 +175,7 @@ public class TCBigQueryClient {
 		    	    List<FieldValue> row = iter.next();
 		    	    
 		    	    for (FieldValue f : row) {
-		    	    	dataRow.add(f.getStringValue());
+		    	    		dataRow.add(f.getStringValue());
 		    	    }
 		    	    dataRowArray = new String[dataRow.size()];
 				    dataRowArray = dataRow.toArray(dataRowArray);
@@ -130,7 +190,6 @@ public class TCBigQueryClient {
 			e.printStackTrace();
 		}
 	}
-	
 	
 	/**
 	 * Wrapper for all of the code needed to actually execute a query with BigQuery
