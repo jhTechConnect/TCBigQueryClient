@@ -45,18 +45,19 @@ public class TCBigQueryClient {
 		
 		//Complete all population-based metrics for the study
 		//Write all session events to CSV file
-	    writeAllSessionEvents(bigquery,"2017-04-01","2017-06-11");
+	    writeAllSessionEvents(bigquery,"2017-06-01","2017-06-11");
 	    
-	    /*
+	    
 	    //Complete all individual-based data
 		//Get list of unique users
-		List<User> users = getUserList(bigquery,"2017-03-01","2017-04-01");
+		List<User> users = getUserList(bigquery,"2017-06-01","2017-06-11");
 		
 		//Use ids to get all info related to individual technician
 		for (User u : users) {
 			System.out.println(u.getId());
-			writeUserUsageData(bigquery,u.getId(),"2017-03-01","2017-04-01");
-		}*/
+			writeAllUserSessionEvents(bigquery,u.getId(),"2017-06-01","2017-06-11");
+			writeUserUsageData(bigquery,u.getId(),"2017-06-01","2017-06-11");
+		}
 	
 	    
 		
@@ -65,14 +66,59 @@ public class TCBigQueryClient {
 	private static void setupDateTable(BigQuery bigquery, String startDate, String endDate) {
 		String query = String.format(TCBigQueryContract.DateHandlingEntry.SET_DATE_RANGE, startDate, endDate);
 		
-		QueryResult result;
-		
 		try {
-			result = completeQueryOverwriteTable(bigquery, query,"date_range");
+			completeQueryOverwriteTable(bigquery, query,"date_range");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private static void writeAllUserSessionEvents(BigQuery bigquery, String id, String startDate, String endDate) {
+		setupDateTable(bigquery,startDate,endDate);
+		String query = String.format(TCBigQueryContract.SessionDataEntry.ALL_EVENTS_DAILY_COUNT_INDIVIDUAL, startDate,endDate,id,
+				startDate,endDate,id,startDate,endDate,id,startDate,endDate,id,startDate,endDate,id,startDate,endDate,id);
+		
+		QueryResult result;
+		
+		try {
+			result = completeQuery(bigquery,query);
+			
+			File file = new File(EXPORT_DIRECTORY, String.format("%s_events.csv",id));
+			CSVWriter writer = new CSVWriter(new FileWriter(file));
+		    List<Field> fields = result.getSchema().getFields();
+		    
+		    //Get the column names of the result
+		    ArrayList<String> dataRow = new ArrayList<String>();
+		    for (Field f : fields) {
+		    	dataRow.add(f.getName());
+		    }
+		    String[] dataRowArray = new String[dataRow.size()];
+		    dataRowArray = dataRow.toArray(dataRowArray);
+		    writer.writeNext(dataRowArray);
+		    dataRow.clear();
+		    
+		    while (result != null) {
+		    	  Iterator<List<FieldValue>> iter = result.iterateAll();
+		    	  while (iter.hasNext()) {
+		    	    List<FieldValue> row = iter.next();
+		    	    
+		    	    for (FieldValue f : row) {
+		    	    		dataRow.add(f.getStringValue());
+		    	    }
+		    	    dataRowArray = new String[dataRow.size()];
+				    dataRowArray = dataRow.toArray(dataRowArray);
+				    writer.writeNext(dataRowArray);
+				    dataRow.clear();
+		    	  }
+		    	  result = result.getNextPage();
+		    }
+		    
+		    writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
 	}
 	
 	private static void writeUserUsageData(BigQuery bigquery, String id, String startDate, String endDate) {
@@ -85,7 +131,7 @@ public class TCBigQueryClient {
 		try {
 			result = completeQuery(bigquery,query);
 			//Prepare CSVWriter in order to write output
-		    File file = new File(EXPORT_DIRECTORY, String.format("%s.csv",id));
+		    File file = new File(EXPORT_DIRECTORY, String.format("%s_usage.csv",id));
 		    CSVWriter writer = new CSVWriter(new FileWriter(file));
 		    List<Field> fields = result.getSchema().getFields();
 		    

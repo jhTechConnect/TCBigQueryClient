@@ -52,6 +52,62 @@ public class TCBigQueryContract {
 			"GROUP BY day " +
 			"ORDER BY day";	
 		
+		public static final String ALL_EVENTS_DAILY_COUNT_INDIVIDUAL = "SELECT Day, COALESCE(INTEGER(count7),0) as BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount "+
+				"FROM (SELECT Day, COALESCE(INTEGER(count6),0) as PausedCount, DeleteCount,ResumeCount,EarlyCount,CompleteCount " +
+				  "FROM (SELECT Day, COALESCE(INTEGER(count5),0) as DeleteCount, ResumeCount, EarlyCount, CompleteCount " +
+				    "FROM (SELECT Day, COALESCE(INTEGER(count4),0) as ResumeCount, EarlyCount, CompleteCount " +
+				      "FROM (SELECT Day , COALESCE(INTEGER(count3),0) as EarlyCount, CompleteCount " +
+				        "FROM (SELECT Day, COALESCE(INTEGER(count1),0) as CompleteCount " +
+				              "FROM (SELECT date(day) as Day FROM org_techconnect_ANDROID.date_range) t2 " +
+				              "LEFT JOIN " +
+				              "(SELECT date(event_dim.timestamp_micros) as day1, count(*) as count1," +
+				              "FROM " +
+				              "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
+				              "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_complete' AND event_dim.params.key = 'item_id' " +
+				              "GROUP BY day1 " +
+				              "Order BY day1) t1 " +
+				              "ON t2.Day = t1.day1) joined " +
+				            "LEFT JOIN " +
+				            "(SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3, " +
+				            "FROM " +
+				            "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
+				            "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_end_early' AND event_dim.params.key = 'item_id' " +
+				            "GROUP BY day3 " +
+				            "Order BY day3) t3 " +
+				            "ON joined.Day= t3.day3) joined2 " +
+				        "LEFT JOIN " +
+				        "(SELECT date(event_dim.timestamp_micros) as day4, count(*) as count4, " +
+				          "FROM  " +
+				          "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
+				          "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_resumed' AND event_dim.params.key = 'item_id' " +
+				          "GROUP BY day4 " +
+				          "Order BY day4) t4 " +
+				          "ON joined2.Day = t4.day4 ) joined3 " +
+				      "LEFT JOIN " +
+				      "(SELECT date(event_dim.timestamp_micros) as day5, count(*) as count5, " +
+				        "FROM " +
+				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
+				        "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_deleted' AND event_dim.params.key = 'item_id' " +
+				        "GROUP BY day5 " +
+				        "Order BY day5) t5 " +
+				        "ON joined3.Day = t5.day5) joined4 " +
+				    "LEFT JOIN " +
+				    "(SELECT date(event_dim.timestamp_micros) as day6, count(*) as count6, " +
+				        "FROM " + 
+				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
+				        "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_paused' AND event_dim.params.key = 'item_id' " +
+				        "GROUP BY day6 " +
+				        "Order BY day6) t6 " +
+				        "ON joined4.Day = t6.day6) joined5 " +
+				  "LEFT JOIN " +
+				  "(SELECT date(event_dim.timestamp_micros) as day7, count(*) as count7, " +
+				        "FROM " +
+				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))" +
+				        "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_begin' AND event_dim.params.key = 'item_id' " +
+				        "GROUP BY day7 " +
+				        "Order BY day7) t7 " +
+				        "ON joined5.Day = t7.day7";
+		
 		public static final String ALL_EVENTS_DAILY_COUNT = "SELECT Day, COALESCE(INTEGER(count7),0) as BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount "+
 				"FROM (SELECT Day, COALESCE(INTEGER(count6),0) as PausedCount, DeleteCount,ResumeCount,EarlyCount,CompleteCount " +
 				  "FROM (SELECT Day, COALESCE(INTEGER(count5),0) as DeleteCount, ResumeCount, EarlyCount, CompleteCount " +
