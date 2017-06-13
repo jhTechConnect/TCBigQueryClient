@@ -144,6 +144,18 @@ public class TCBigQueryContract {
 						  "AND event_dim.params.key = 'engagement_time_msec', event_dim.params.value),event_dim) t2 " +
 						  "On t1.thing1 = t2.thing2 "+
 						  "ORDER BY thing1";
+		public static final String COMMENTS_COUNT = "SELECT date(event_dim.timestamp_micros) as day, count(*) as Count, " +
+				  "FROM " +
+				  "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
+				  "WHERE event_dim.name = 'post_comment' " +
+				  "GROUP BY day " +
+				  "Order BY day";
+		
+		public static final String ALL_COMMENT_DATA = "SELECT date(event_dim.timestamp_micros) as day, user_dim.app_info.app_instance_id as User, event_dim.params.value.string_value as Flowchart" +
+		  "FROM " +
+		  "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) "+
+		  "WHERE event_dim.name = 'post_comment' AND event_dim.params.key = 'item_name' " +
+		  "Order BY day";
 	}
 	
 	public static class UserDataEntry {

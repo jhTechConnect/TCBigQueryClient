@@ -37,17 +37,12 @@ public class TCBigQueryClient {
 	
 	public static void main(String[] args) throws IOException, FileNotFoundException, InterruptedException, TimeoutException {
 		BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
-	    // [END create_client]
 		
-		//Test defining the desired date data for later use
-		//setupDateTable(bigquery,"2017-05-01","2017-05-31");
-		
-		
+		/*
 		//Complete all population-based metrics for the study
 		//Write all session events to CSV file
 	    writeAllSessionEvents(bigquery,"2017-06-01","2017-06-11");
-	    
-	    
+	   
 	    //Complete all individual-based data
 		//Get list of unique users
 		List<User> users = getUserList(bigquery,"2017-06-01","2017-06-11");
@@ -58,8 +53,9 @@ public class TCBigQueryClient {
 			writeAllUserSessionEvents(bigquery,u.getId(),"2017-06-01","2017-06-11");
 			writeUserUsageData(bigquery,u.getId(),"2017-06-01","2017-06-11");
 		}
-	
-	    
+		*/
+		//Get comments posted
+		writeCommentData(bigquery,"2017-01-01","2017-06-11");
 		
 	}
 	
@@ -160,6 +156,66 @@ public class TCBigQueryClient {
 		    	    	dataRow.add(row.get(4).getStringValue());
 		    	    }
 		    	    
+		    	    dataRowArray = new String[dataRow.size()];
+				    dataRowArray = dataRow.toArray(dataRowArray);
+				    writer.writeNext(dataRowArray);
+				    dataRow.clear();
+		    	  }
+		    	  result = result.getNextPage();
+		    }
+		    
+		    writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void writeCommentData(BigQuery bigquery,String startDate, String endDate, boolean all) {
+		//Get the appropriate query based on the dates
+		setupDateTable(bigquery,startDate,endDate);
+		String query;
+		if (all) {
+			query = String.format(TCBigQueryContract.GeneralInfoEntry.ALL_COMMENT_DATA, startDate,endDate);
+		} else {
+			query = String.format(TCBigQueryContract.GeneralInfoEntry.COMMENTS_COUNT, startDate,endDate);
+		}
+		
+		QueryResult result;
+		
+		try {
+			result = completeQuery(bigquery,query);
+			
+			//Initialize the list of users
+		    ArrayList<User> users = new ArrayList<User>();
+		    //Initialize file for writer
+		    File file;
+		    if (all) {
+		    	file = new File(EXPORT_DIRECTORY, String.format("commentData_%s_%s.csv",startDate,endDate));
+		    } else {
+		    	file = new File(EXPORT_DIRECTORY, String.format("commentCount_%s_%s.csv",startDate,endDate));
+		    }
+		    CSVWriter writer = new CSVWriter(new FileWriter(file));
+		    List<Field> fields = result.getSchema().getFields();
+		    
+		    
+		    //Get the column names of the result
+		    ArrayList<String> dataRow = new ArrayList<String>();
+		    for (Field f : fields) {
+		    	dataRow.add(f.getName());
+		    }
+		    String[] dataRowArray = new String[dataRow.size()];
+		    dataRowArray = dataRow.toArray(dataRowArray);
+		    writer.writeNext(dataRowArray);
+		    dataRow.clear();
+		    
+		    while (result != null) {
+		    	  Iterator<List<FieldValue>> iter = result.iterateAll();
+		    	  while (iter.hasNext()) {
+		    	    List<FieldValue> row = iter.next();
+		    	    
+		    	    for (FieldValue f : row) {
+		    	    		dataRow.add(f.getStringValue());
+		    	    }
 		    	    dataRowArray = new String[dataRow.size()];
 				    dataRowArray = dataRow.toArray(dataRowArray);
 				    writer.writeNext(dataRowArray);
