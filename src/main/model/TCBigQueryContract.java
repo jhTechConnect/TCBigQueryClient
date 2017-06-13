@@ -24,7 +24,7 @@ public class TCBigQueryContract {
 				            "(SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3, " +
 				            "FROM " +
 				            "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				            "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_end_early' AND event_dim.params.key = 'item_id' " +
+				            "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_end_early_nosave' AND event_dim.params.key = 'item_id' " +
 				            "GROUP BY day3 " +
 				            "Order BY day3) t3 " +
 				            "ON joined.Day= t3.day3) joined2 " +
@@ -80,7 +80,7 @@ public class TCBigQueryContract {
 				            "(SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3, " +
 				            "FROM " +
 				            "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				            "WHERE event_dim.name = 'session_end_early' AND event_dim.params.key = 'item_id' " +
+				            "WHERE event_dim.name = 'session_end_early_nosave' AND event_dim.params.key = 'item_id' " +
 				            "GROUP BY day3 " +
 				            "Order BY day3) t3 " +
 				            "ON joined.Day= t3.day3) joined2 " +
