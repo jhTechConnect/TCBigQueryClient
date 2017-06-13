@@ -17,9 +17,11 @@ import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryResponse;
 import com.google.cloud.bigquery.QueryResult;
+import com.google.cloud.bigquery.TableId;
 import com.opencsv.CSVWriter;
 
 import main.model.TCBigQueryContract;
@@ -34,10 +36,15 @@ public class TCBigQueryClient {
 		BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
 	    // [END create_client]
 		
+		//Test defining the desired date data for later use
+		//setupDateTable(bigquery,"2017-05-01","2017-05-31");
+		
+		
 		//Complete all population-based metrics for the study
 		//Write all session events to CSV file
-	    writeAllSessionEvents(bigquery,"2017-03-01","2017-04-07");
+	    writeAllSessionEvents(bigquery,"2017-04-01","2017-06-11");
 	    
+	    /*
 	    //Complete all individual-based data
 		//Get list of unique users
 		List<User> users = getUserList(bigquery,"2017-03-01","2017-04-01");
@@ -46,14 +53,28 @@ public class TCBigQueryClient {
 		for (User u : users) {
 			System.out.println(u.getId());
 			writeUserUsageData(bigquery,u.getId(),"2017-03-01","2017-04-01");
-		}
+		}*/
 	
 	    
 		
 	}
 	
+	private static void setupDateTable(BigQuery bigquery, String startDate, String endDate) {
+		String query = String.format(TCBigQueryContract.DateHandlingEntry.SET_DATE_RANGE, startDate, endDate);
+		
+		QueryResult result;
+		
+		try {
+			result = completeQueryOverwriteTable(bigquery, query,"date_range");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private static void writeUserUsageData(BigQuery bigquery, String id, String startDate, String endDate) {
 		//Get all sessions based on session_start
+		setupDateTable(bigquery,startDate,endDate);
 		String query = String.format(TCBigQueryContract.GeneralInfoEntry.ALL_USER_INFO_SESSIONS, startDate, endDate, id, startDate, endDate, id);
 		
 		QueryResult result;
@@ -114,7 +135,7 @@ public class TCBigQueryClient {
 	 */
 	private static List<User> getUserList(BigQuery bq, String startDate, String endDate) throws TimeoutException, InterruptedException {
 		//Get the appropriate query based on the dates
-		
+		setupDateTable(bq,startDate,endDate);
 		String query = String.format(TCBigQueryContract.UserDataEntry.LIST_UNIQUE_USER, startDate,endDate);
 		QueryResult result;
 		
@@ -148,7 +169,10 @@ public class TCBigQueryClient {
 	 * @param endDate - in form "yyyy-MM-dd"
 	 */
 	private static void writeAllSessionEvents(BigQuery bq,String startDate, String endDate) {
-		String query = String.format(TCBigQueryContract.SessionDataEntry.ALL_EVENTS_DAILY_COUNT, startDate,endDate,startDate,endDate);
+		setupDateTable(bq,startDate,endDate);
+		String query = String.format(TCBigQueryContract.SessionDataEntry.ALL_EVENTS_DAILY_COUNT, startDate,endDate,
+				startDate,endDate,startDate,endDate,startDate,endDate,startDate,endDate,startDate,endDate);
+
 		QueryResult result;
 		
 		try {
@@ -202,8 +226,37 @@ public class TCBigQueryClient {
 	private static QueryResult completeQuery(BigQuery bq, String query) throws TimeoutException, InterruptedException  {
 		QueryJobConfiguration queryConfig =
 		        QueryJobConfiguration.newBuilder(query)
-		            .setUseLegacySql(true) //This is whatever I've been using online, so I'm going to stick with it
-		            .build();
+	            .setUseLegacySql(true) //This is whatever I've been using online, so I'm going to stick with it
+	            .build();
+
+		    // Create a job ID so that we can safely retry.
+		    JobId jobId = JobId.of(UUID.randomUUID().toString());
+		    Job queryJob = bq.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
+
+		    // Wait for the query to complete.
+		    queryJob = queryJob.waitFor();
+
+		    // Check for errors
+		    if (queryJob == null) {
+		      throw new RuntimeException("Job no longer exists");
+		    } else if (queryJob.getStatus().getError() != null) {
+		      // You can also look at queryJob.getStatus().getExecutionErrors() for all
+		      // errors, not just the latest one.
+		      throw new RuntimeException(queryJob.getStatus().getError().toString());
+		    }
+
+		    // Get the results.
+		    QueryResponse response = bq.getQueryResults(jobId);
+		    return response.getResult();
+	}
+	
+	private static QueryResult completeQueryOverwriteTable(BigQuery bq, String query, String tablename) throws TimeoutException, InterruptedException  {
+		QueryJobConfiguration queryConfig =
+		        QueryJobConfiguration.newBuilder(query)
+		        .setDestinationTable(TableId.of("org_techconnect_ANDROID", tablename))
+		        .setWriteDisposition(WriteDisposition.WRITE_TRUNCATE)
+	            .setUseLegacySql(true) //This is whatever I've been using online, so I'm going to stick with it
+	            .build();
 
 		    // Create a job ID so that we can safely retry.
 		    JobId jobId = JobId.of(UUID.randomUUID().toString());
