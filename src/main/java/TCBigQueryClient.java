@@ -193,6 +193,21 @@ public class TCBigQueryClient {
 			
 			//Initialize the list of users
 		    ArrayList<User> users = new ArrayList<User>();
+		    //Initialize file for writer
+		    File file = new File(EXPORT_DIRECTORY, String.format("user_list_%s_%s.csv",startDate,endDate));
+			CSVWriter writer = new CSVWriter(new FileWriter(file));
+		    List<Field> fields = result.getSchema().getFields();
+		    
+		    
+		    //Get the column names of the result
+		    ArrayList<String> dataRow = new ArrayList<String>();
+		    for (Field f : fields) {
+		    	dataRow.add(f.getName());
+		    }
+		    String[] dataRowArray = new String[dataRow.size()];
+		    dataRowArray = dataRow.toArray(dataRowArray);
+		    writer.writeNext(dataRowArray);
+		    dataRow.clear();
 		    
 		    while (result != null) {
 		    	  Iterator<List<FieldValue>> iter = result.iterateAll();
@@ -200,10 +215,19 @@ public class TCBigQueryClient {
 		    	    List<FieldValue> row = iter.next();
 		    	    User user = new User(row.get(0).getStringValue(),row.get(1).getStringValue(),row.get(2).getStringValue());
 		    	    users.add(user);
+		    	    
+		    	    for (FieldValue f : row) {
+		    	    		dataRow.add(f.getStringValue());
+		    	    }
+		    	    dataRowArray = new String[dataRow.size()];
+				    dataRowArray = dataRow.toArray(dataRowArray);
+				    writer.writeNext(dataRowArray);
+				    dataRow.clear();
 		    	  }
 		    	  result = result.getNextPage();
 		    }
 		    
+		    writer.close();		    
 		    return users;
 		} catch (Exception e) {
 			e.printStackTrace();
