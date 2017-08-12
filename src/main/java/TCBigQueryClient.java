@@ -32,10 +32,21 @@ import main.model.User;
 
 public class TCBigQueryClient {
 	
-	public final static String EXPORT_DIRECTORY = "/Users/doranwalsten/Documents/TechConnect/Usage/";
-	
+	private static String EXPORT_DIRECTORY = "";
 	
 	public static void main(String[] args) throws IOException, FileNotFoundException, InterruptedException, TimeoutException {
+		boolean output = false;
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equalsIgnoreCase("-o")) {
+				EXPORT_DIRECTORY = args[i+1];
+				output = true;
+			}
+		}
+		
+		if (!output) {
+			System.out.println("Output file not provided. Query not completed");
+			System.exit(0);
+		}
 		BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
 		
 		/*
