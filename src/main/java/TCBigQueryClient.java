@@ -32,7 +32,7 @@ import main.model.User;
 
 public class TCBigQueryClient {
 	
-	public final static String EXPORT_DIRECTORY = "/Users/doranwalsten/Documents/CBID/TechConnect/Usage/";
+	public final static String EXPORT_DIRECTORY = "/Users/doranwalsten/Documents/TechConnect/Usage/";
 	
 	
 	public static void main(String[] args) throws IOException, FileNotFoundException, InterruptedException, TimeoutException {
@@ -55,7 +55,7 @@ public class TCBigQueryClient {
 		}
 		*/
 		//Get comments posted
-		writeCommentData(bigquery,"2017-01-01","2017-06-11");
+		writeCommentData(bigquery,"2017-01-01","2017-06-11", false);
 		
 	}
 	
