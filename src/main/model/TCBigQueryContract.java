@@ -196,20 +196,6 @@ public class TCBigQueryContract {
 	}
 	public static class GeneralInfoEntry {
 		
-		public static final String ALL_USER_INFO_SESSIONS = "SELECT Event, date(thing1) as Date, thing1 as Raw, Class, EngagementTime FROM " +
-				  "FLATTEN(FLATTEN(SELECT event_dim.name as Event, event_dim.timestamp_micros as thing1, event_dim.params.value.string_value as Class, " +
-						  "FROM " +
-						  "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-						  "WHERE user_dim.app_info.app_instance_id = '%s'AND (event_dim.name = 'user_engagement' OR event_dim.name = 'session_start') " +
-						  "AND event_dim.params.key = 'firebase_screen_class', event_dim.params.value),event_dim) t1, " +
-						  "LEFT JOIN " +
-						  "FLATTEN(FLATTEN(SELECT event_dim.timestamp_micros as thing2,event_dim.params.value.int_value as EngagementTime, " +
-						  "FROM " +
-						  "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-						  "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'user_engagement' " +
-						  "AND event_dim.params.key = 'engagement_time_msec', event_dim.params.value),event_dim) t2 " +
-						  "On t1.thing1 = t2.thing2 "+
-						  "ORDER BY thing1";
 		public static final String COMMENTS_COUNT = "SELECT date(event_dim.timestamp_micros) as day, count(*) as Count, " +
 				  "FROM " +
 				  "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
@@ -232,5 +218,20 @@ public class TCBigQueryContract {
 		"FROM " +
 		"TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
 		"GROUP BY User, DeviceName, Version";
+		
+		public static final String USER_USAGE_INFO = "SELECT Event, date(thing1) as Date, thing1 as Raw, Class, EngagementTime\n" + 
+				"FROM FLATTEN(FLATTEN(SELECT event_dim.name as Event, event_dim.timestamp_micros as thing1, event_dim.params.value.string_value as Class,\n" + 
+				"                    FROM\n" + 
+				"						        TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"						        WHERE user_dim.app_info.app_instance_id = '%s' AND (event_dim.name = 'user_engagement' OR event_dim.name = 'session_start')\n" + 
+				"						        AND event_dim.params.key = 'firebase_screen_class', event_dim.params.value),event_dim) t1,\n" + 
+				"              LEFT JOIN\n" + 
+				"              FLATTEN(FLATTEN(SELECT event_dim.timestamp_micros as thing2,event_dim.params.value.int_value as EngagementTime,\n" + 
+				"              FROM\n" + 
+				"              TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"              WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'user_engagement'\n" + 
+				"              AND event_dim.params.key = 'engagement_time_msec', event_dim.params.value),event_dim) t2\n" + 
+				"              On t1.thing1 = t2.thing2\n" + 
+				"              ORDER BY thing1";
 	}
 }

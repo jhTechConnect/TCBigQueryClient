@@ -88,7 +88,7 @@ public class Queries {
 	public static void writeUserUsageData(BigQuery bigquery, String id, String startDate, String endDate) {
 		//Get all sessions based on session_start
 		setupDateTable(bigquery,startDate,endDate);
-		String query = String.format(TCBigQueryContract.GeneralInfoEntry.ALL_USER_INFO_SESSIONS, startDate, endDate, id, startDate, endDate, id);
+		String query = String.format(TCBigQueryContract.UserDataEntry.USER_USAGE_INFO, startDate, endDate, id, startDate, endDate, id);
 		
 		QueryResult result;
 		
