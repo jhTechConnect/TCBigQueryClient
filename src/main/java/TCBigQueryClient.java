@@ -33,11 +33,11 @@ public class TCBigQueryClient {
 		Queries.setExportDirectory(EXPORT_DIRECTORY);
 		BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
 		
-		/*
+		
 		//Complete all population-based metrics for the study
 		//Write all session events to CSV file
-	    writeAllSessionEvents(bigquery,"2017-06-01","2017-06-11");
-	   */
+	    Queries.writeAllSessionEvents(bigquery,"2017-06-01","2017-06-30");
+	   
 	    //Complete all individual-based data
 		//Get list of unique users
 		List<User> users = Queries.getUserList(bigquery,"2017-06-10","2017-06-21");
@@ -48,6 +48,7 @@ public class TCBigQueryClient {
 			Queries.writeAllUserSessionEvents(bigquery,u.getId(),"2017-06-01","2017-06-11");
 			Queries.writeUserUsageData(bigquery,u.getId(),"2017-06-10","2017-06-21");
 		}
+		
 
 		//Get comments posted
 		Queries.writeCommentData(bigquery,"2017-01-01","2017-06-11", false);

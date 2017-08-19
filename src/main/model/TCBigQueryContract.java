@@ -5,117 +5,183 @@ public class TCBigQueryContract {
 	public static class SessionDataEntry {
 	
 		
-		public static final String ALL_EVENTS_DAILY_COUNT_INDIVIDUAL = "SELECT Day, COALESCE(INTEGER(count7),0) as BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount "+
-				"FROM (SELECT Day, COALESCE(INTEGER(count6),0) as PausedCount, DeleteCount,ResumeCount,EarlyCount,CompleteCount " +
-				  "FROM (SELECT Day, COALESCE(INTEGER(count5),0) as DeleteCount, ResumeCount, EarlyCount, CompleteCount " +
-				    "FROM (SELECT Day, COALESCE(INTEGER(count4),0) as ResumeCount, EarlyCount, CompleteCount " +
-				      "FROM (SELECT Day , COALESCE(INTEGER(count3),0) as EarlyCount, CompleteCount " +
-				        "FROM (SELECT Day, COALESCE(INTEGER(count1),0) as CompleteCount " +
-				              "FROM (SELECT date(day) as Day FROM org_techconnect_ANDROID.date_range) t2 " +
-				              "LEFT JOIN " +
-				              "(SELECT date(event_dim.timestamp_micros) as day1, count(*) as count1," +
-				              "FROM " +
-				              "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				              "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_complete' AND event_dim.params.key = 'item_id' " +
-				              "GROUP BY day1 " +
-				              "Order BY day1) t1 " +
-				              "ON t2.Day = t1.day1) joined " +
-				            "LEFT JOIN " +
-				            "(SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3, " +
-				            "FROM " +
-				            "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				            "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_end_early_nosave' AND event_dim.params.key = 'item_id' " +
-				            "GROUP BY day3 " +
-				            "Order BY day3) t3 " +
-				            "ON joined.Day= t3.day3) joined2 " +
-				        "LEFT JOIN " +
-				        "(SELECT date(event_dim.timestamp_micros) as day4, count(*) as count4, " +
-				          "FROM  " +
-				          "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				          "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_resumed' AND event_dim.params.key = 'item_id' " +
-				          "GROUP BY day4 " +
-				          "Order BY day4) t4 " +
-				          "ON joined2.Day = t4.day4 ) joined3 " +
-				      "LEFT JOIN " +
-				      "(SELECT date(event_dim.timestamp_micros) as day5, count(*) as count5, " +
-				        "FROM " +
-				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				        "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_deleted' AND event_dim.params.key = 'item_id' " +
-				        "GROUP BY day5 " +
-				        "Order BY day5) t5 " +
-				        "ON joined3.Day = t5.day5) joined4 " +
-				    "LEFT JOIN " +
-				    "(SELECT date(event_dim.timestamp_micros) as day6, count(*) as count6, " +
-				        "FROM " + 
-				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				        "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_paused' AND event_dim.params.key = 'item_id' " +
-				        "GROUP BY day6 " +
-				        "Order BY day6) t6 " +
-				        "ON joined4.Day = t6.day6) joined5 " +
-				  "LEFT JOIN " +
-				  "(SELECT date(event_dim.timestamp_micros) as day7, count(*) as count7, " +
-				        "FROM " +
-				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))" +
-				        "WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_begin' AND event_dim.params.key = 'item_id' " +
-				        "GROUP BY day7 " +
-				        "Order BY day7) t7 " +
-				        "ON joined5.Day = t7.day7";
+		// Saved as ALL_EVENTS_DAILY_COUNT_INDIVIDUAL on BigQuery
+		// 9 entries
+		public static final String ALL_EVENTS_DAILY_COUNT_INDIVIDUAL = "SELECT Day, COALESCE(INTEGER(count10),0) as PausedStubCount, EarlyStubCount, CompleteStubCount, BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"FROM (SELECT Day, COALESCE(INTEGER(count9),0) as EarlyStubCount, CompleteStubCount, BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"      FROM (SELECT Day, COALESCE(INTEGER(count8),0) as CompleteStubCount, BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"            FROM (SELECT Day, COALESCE(INTEGER(count7),0) as BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"                  FROM (SELECT Day, COALESCE(INTEGER(count6),0) as PausedCount, DeleteCount,ResumeCount,EarlyCount,CompleteCount\n" + 
+				"                        FROM (SELECT Day, COALESCE(INTEGER(count5),0) as DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"                              FROM (SELECT Day, COALESCE(INTEGER(count4),0) as ResumeCount, EarlyCount, CompleteCount\n" + 
+				"                                    FROM (SELECT Day , COALESCE(INTEGER(count3),0) as EarlyCount, CompleteCount\n" + 
+				"                                          FROM (SELECT Day, COALESCE(INTEGER(count1),0) as CompleteCount\n" + 
+				"                                                FROM (SELECT date(day) as Day FROM org_techconnect_ANDROID.date_range) t2\n" + 
+				"                                                    LEFT JOIN\n" + 
+				"                                                   (SELECT date(event_dim.timestamp_micros) as day1, count(*) as count1,\n" + 
+				"                                                    FROM\n" + 
+				"                                                    TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                                                    WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_complete' AND event_dim.params.key = 'item_id'\n" + 
+				"                                                    GROUP BY day1\n" + 
+				"                                                    Order BY day1) t1\n" + 
+				"                                                    ON t2.Day = t1.day1) joined\n" + 
+				"                                              LEFT JOIN\n" + 
+				"                                              (SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3,\n" + 
+				"                                              FROM\n" + 
+				"                                              TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                                              WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_end_early_nosave' AND event_dim.params.key = 'item_id'\n" + 
+				"                                              GROUP BY day3\n" + 
+				"                                              Order BY day3) t3\n" + 
+				"                                              ON joined.Day= t3.day3) joined2\n" + 
+				"                                        LEFT JOIN\n" + 
+				"                                        (SELECT date(event_dim.timestamp_micros) as day4, count(*) as count4,\n" + 
+				"                                        FROM\n" + 
+				"                                        TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                                        WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_resumed' AND event_dim.params.key = 'item_id'\n" + 
+				"                                        GROUP BY day4\n" + 
+				"                                        Order BY day4) t4\n" + 
+				"                                        ON joined2.Day = t4.day4 ) joined3\n" + 
+				"                                  LEFT JOIN\n" + 
+				"                                  (SELECT date(event_dim.timestamp_micros) as day5, count(*) as count5,\n" + 
+				"                                  FROM\n" + 
+				"                                  TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                                  WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_deleted' AND event_dim.params.key = 'item_id'\n" + 
+				"                                  GROUP BY day5\n" + 
+				"                                  Order BY day5) t5\n" + 
+				"                                  ON joined3.Day = t5.day5) joined4\n" + 
+				"                            LEFT JOIN\n" + 
+				"                            (SELECT date(event_dim.timestamp_micros) as day6, count(*) as count6,\n" + 
+				"                             FROM\n" + 
+				"                             TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                             WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_paused' AND event_dim.params.key = 'item_id'\n" + 
+				"                             GROUP BY day6\n" + 
+				"                             Order BY day6) t6\n" + 
+				"                             ON joined4.Day = t6.day6) joined5\n" + 
+				"                       LEFT JOIN\n" + 
+				"                       (SELECT date(event_dim.timestamp_micros) as day7, count(*) as count7,\n" + 
+				"                       FROM\n" + 
+				"                       TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                       WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_begin' AND event_dim.params.key = 'item_id'\n" + 
+				"                       GROUP BY day7\n" + 
+				"                       Order BY day7) t7\n" + 
+				"                       ON joined5.Day = t7.day7) joined6\n" + 
+				"                 LEFT JOIN\n" + 
+				"                 (SELECT date(event_dim.timestamp_micros) as day8, count(*) as count8,\n" + 
+				"                 FROM\n" + 
+				"                 TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                 WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_complete_stub' AND event_dim.params.key = 'item_id'\n" + 
+				"                 GROUP BY day8\n" + 
+				"                 Order BY day8) t8\n" + 
+				"                 ON joined6.Day = t8.day8) joined7\n" + 
+				"           LEFT JOIN\n" + 
+				"           (SELECT date(event_dim.timestamp_micros) as day9, count(*) as count9,\n" + 
+				"           FROM\n" + 
+				"           TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"           WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_end_early_nosave_stub' AND event_dim.params.key = 'item_id'\n" + 
+				"           GROUP BY day9\n" + 
+				"           Order BY day9) t9\n" + 
+				"           ON joined7.Day = t9.day9) joined8\n" + 
+				"     LEFT JOIN\n" + 
+				"     (SELECT date(event_dim.timestamp_micros) as day10, count(*) as count10,\n" + 
+				"     FROM\n" + 
+				"     TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"     WHERE user_dim.app_info.app_instance_id = '%s' AND event_dim.name = 'session_paused_stub' AND event_dim.params.key = 'item_id'\n" + 
+				"     GROUP BY day10\n" + 
+				"     Order BY day10) t10\n" + 
+				"     ON joined8.Day = t10.day10";
 		
-		public static final String ALL_EVENTS_DAILY_COUNT = "SELECT Day, COALESCE(INTEGER(count7),0) as BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount "+
-				"FROM (SELECT Day, COALESCE(INTEGER(count6),0) as PausedCount, DeleteCount,ResumeCount,EarlyCount,CompleteCount " +
-				  "FROM (SELECT Day, COALESCE(INTEGER(count5),0) as DeleteCount, ResumeCount, EarlyCount, CompleteCount " +
-				    "FROM (SELECT Day, COALESCE(INTEGER(count4),0) as ResumeCount, EarlyCount, CompleteCount " +
-				      "FROM (SELECT Day , COALESCE(INTEGER(count3),0) as EarlyCount, CompleteCount " +
-				        "FROM (SELECT Day, COALESCE(INTEGER(count1),0) as CompleteCount " +
-				              "FROM (SELECT date(day) as Day FROM org_techconnect_ANDROID.date_range) t2 " +
-				              "LEFT JOIN " +
-				              "(SELECT date(event_dim.timestamp_micros) as day1, count(*) as count1," +
-				              "FROM " +
-				              "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				              "WHERE event_dim.name = 'session_complete' AND event_dim.params.key = 'item_id' " +
-				              "GROUP BY day1 " +
-				              "Order BY day1) t1 " +
-				              "ON t2.Day = t1.day1) joined " +
-				            "LEFT JOIN " +
-				            "(SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3, " +
-				            "FROM " +
-				            "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				            "WHERE event_dim.name = 'session_end_early_nosave' AND event_dim.params.key = 'item_id' " +
-				            "GROUP BY day3 " +
-				            "Order BY day3) t3 " +
-				            "ON joined.Day= t3.day3) joined2 " +
-				        "LEFT JOIN " +
-				        "(SELECT date(event_dim.timestamp_micros) as day4, count(*) as count4, " +
-				          "FROM  " +
-				          "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				          "WHERE event_dim.name = 'session_resumed' AND event_dim.params.key = 'item_id' " +
-				          "GROUP BY day4 " +
-				          "Order BY day4) t4 " +
-				          "ON joined2.Day = t4.day4 ) joined3 " +
-				      "LEFT JOIN " +
-				      "(SELECT date(event_dim.timestamp_micros) as day5, count(*) as count5, " +
-				        "FROM " +
-				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				        "WHERE event_dim.name = 'session_deleted' AND event_dim.params.key = 'item_id' " +
-				        "GROUP BY day5 " +
-				        "Order BY day5) t5 " +
-				        "ON joined3.Day = t5.day5) joined4 " +
-				    "LEFT JOIN " +
-				    "(SELECT date(event_dim.timestamp_micros) as day6, count(*) as count6, " +
-				        "FROM " + 
-				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-				        "WHERE event_dim.name = 'session_paused' AND event_dim.params.key = 'item_id' " +
-				        "GROUP BY day6 " +
-				        "Order BY day6) t6 " +
-				        "ON joined4.Day = t6.day6) joined5 " +
-				  "LEFT JOIN " +
-				  "(SELECT date(event_dim.timestamp_micros) as day7, count(*) as count7, " +
-				        "FROM " +
-				        "TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))" +
-				        "WHERE event_dim.name = 'session_begin' AND event_dim.params.key = 'item_id' " +
-				        "GROUP BY day7 " +
-				        "Order BY day7) t7 " +
-				        "ON joined5.Day = t7.day7";
+		// 9 pairs of string literals
+		// ALL_EVENTS_DAILY_COUNT saved query in BigQuery
+		public static final String ALL_EVENTS_DAILY_COUNT = "SELECT Day, COALESCE(INTEGER(count10),0) as PausedStubCount, EarlyStubCount, CompleteStubCount, BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"  FROM\n" + 
+				"  (SELECT Day, COALESCE(INTEGER(count9),0) as EarlyStubCount, CompleteStubCount, BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"  FROM\n" + 
+				"    (SELECT Day, COALESCE(INTEGER(count8),0) as CompleteStubCount, BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"    FROM\n" + 
+				"      (SELECT Day, COALESCE(INTEGER(count7),0) as BeginCount, PausedCount, DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"      FROM\n" + 
+				"        (SELECT Day, COALESCE(INTEGER(count6),0) as PausedCount, DeleteCount,ResumeCount,EarlyCount,CompleteCount\n" + 
+				"        FROM\n" + 
+				"          (SELECT Day, COALESCE(INTEGER(count5),0) as DeleteCount, ResumeCount, EarlyCount, CompleteCount\n" + 
+				"          FROM\n" + 
+				"            (SELECT Day, COALESCE(INTEGER(count4),0) as ResumeCount, EarlyCount, CompleteCount\n" + 
+				"            FROM\n" + 
+				"              (SELECT day2 as Day , COALESCE(INTEGER(count3),0) as EarlyCount, CompleteCount, \n" + 
+				"              FROM \n" + 
+				"                  (SELECT day2, COALESCE(INTEGER(count1),0) as CompleteCount\n" + 
+				"                    FROM (SELECT date(day) as day2 FROM org_techconnect_ANDROID.date_range) t2\n" + 
+				"                    LEFT JOIN\n" + 
+				"                    (SELECT date(event_dim.timestamp_micros) as day1, count(*) as count1,\n" + 
+				"                    FROM \n" + 
+				"                    TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                    WHERE event_dim.name = 'session_complete' AND event_dim.params.key = 'item_id'\n" + 
+				"                    GROUP BY day1\n" + 
+				"                    Order BY day1) t1\n" + 
+				"                    ON t1.day1 = t2.day2) joined\n" + 
+				"                  LEFT JOIN\n" + 
+				"                  (SELECT date(event_dim.timestamp_micros) as day3, count(*) as count3,\n" + 
+				"                  FROM \n" + 
+				"                  TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                  WHERE event_dim.name = 'session_end_early_nosave' AND event_dim.params.key = 'item_id'\n" + 
+				"                  GROUP BY day3\n" + 
+				"                  Order BY day3) t3\n" + 
+				"                  ON joined.day2 = t3.day3) joined2\n" + 
+				"              LEFT JOIN\n" + 
+				"              (SELECT date(event_dim.timestamp_micros) as day4, count(*) as count4,\n" + 
+				"                FROM \n" + 
+				"                TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"                WHERE event_dim.name = 'session_resumed' AND event_dim.params.key = 'item_id'\n" + 
+				"                GROUP BY day4\n" + 
+				"                Order BY day4) t4\n" + 
+				"                ON joined2.Day = t4.day4 ) joined3\n" + 
+				"            LEFT JOIN\n" + 
+				"            (SELECT date(event_dim.timestamp_micros) as day5, count(*) as count5,\n" + 
+				"              FROM \n" + 
+				"              TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"              WHERE event_dim.name = 'session_deleted' AND event_dim.params.key = 'item_id'\n" + 
+				"              GROUP BY day5\n" + 
+				"              Order BY day5) t5\n" + 
+				"              ON joined3.Day = t5.day5) joined4\n" + 
+				"          LEFT JOIN\n" + 
+				"          (SELECT date(event_dim.timestamp_micros) as day6, count(*) as count6,\n" + 
+				"              FROM \n" + 
+				"              TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"              WHERE event_dim.name = 'session_paused' AND event_dim.params.key = 'item_id'\n" + 
+				"              GROUP BY day6\n" + 
+				"              Order BY day6) t6\n" + 
+				"              ON joined4.Day = t6.day6) joined5\n" + 
+				"        LEFT JOIN\n" + 
+				"        (SELECT date(event_dim.timestamp_micros) as day7, count(*) as count7,\n" + 
+				"              FROM \n" + 
+				"              TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"              WHERE event_dim.name = 'session_begin' AND event_dim.params.key = 'item_id'\n" + 
+				"              GROUP BY day7\n" + 
+				"              Order BY day7) t7\n" + 
+				"              ON joined5.Day = t7.day7) joined6\n" + 
+				"      LEFT JOIN\n" + 
+				"      (SELECT date(event_dim.timestamp_micros) as day8, count(*) as count8,\n" + 
+				"        FROM\n" + 
+				"        TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"        WHERE event_dim.name = 'session_complete_stub' AND event_dim.params.key = 'item_id'\n" + 
+				"              GROUP BY day8\n" + 
+				"              Order BY day8) t8\n" + 
+				"              ON joined6.Day = t8.day8) joined7\n" + 
+				"    LEFT JOIN\n" + 
+				"    (SELECT date(event_dim.timestamp_micros) as day9, count(*) as count9,\n" + 
+				"        FROM\n" + 
+				"        TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"        WHERE event_dim.name = 'session_end_early_nosave_stub' AND event_dim.params.key = 'item_id'\n" + 
+				"              GROUP BY day9\n" + 
+				"              Order BY day9) t9\n" + 
+				"              ON joined7.Day = t9.day9) joined8\n" + 
+				"  LEFT JOIN\n" + 
+				"  (SELECT date(event_dim.timestamp_micros) as day10, count(*) as count10,\n" + 
+				"        FROM\n" + 
+				"        TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"        WHERE event_dim.name = 'session_paused_stub' AND event_dim.params.key = 'item_id'\n" + 
+				"              GROUP BY day10\n" + 
+				"              Order BY day10) t10\n" + 
+				"              ON joined8.Day = t10.day10";
 	}
 	
 	public static class DateHandlingEntry {

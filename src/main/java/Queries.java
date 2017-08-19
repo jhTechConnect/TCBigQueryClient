@@ -40,7 +40,8 @@ public class Queries {
 	public static void writeAllUserSessionEvents(BigQuery bigquery, String id, String startDate, String endDate) {
 		setupDateTable(bigquery,startDate,endDate);
 		String query = String.format(TCBigQueryContract.SessionDataEntry.ALL_EVENTS_DAILY_COUNT_INDIVIDUAL, startDate,endDate,id,
-				startDate,endDate,id,startDate,endDate,id,startDate,endDate,id,startDate,endDate,id,startDate,endDate,id);
+				startDate,endDate,id,startDate,endDate,id,startDate,endDate,id,startDate,endDate,id,startDate,endDate,id
+				,startDate,endDate,id,startDate,endDate,id,startDate,endDate,id);
 		
 		QueryResult result;
 		
@@ -267,7 +268,9 @@ public class Queries {
 	public static void writeAllSessionEvents(BigQuery bq,String startDate, String endDate) {
 		setupDateTable(bq,startDate,endDate);
 		String query = String.format(TCBigQueryContract.SessionDataEntry.ALL_EVENTS_DAILY_COUNT, startDate,endDate,
-				startDate,endDate,startDate,endDate,startDate,endDate,startDate,endDate,startDate,endDate);
+				startDate,endDate,startDate,endDate,startDate,endDate,startDate,endDate,startDate,endDate,startDate,endDate,
+				startDate,endDate,startDate,endDate);
+		System.out.println(query);
 
 		QueryResult result;
 		
