@@ -213,11 +213,11 @@ public class TCBigQueryContract {
 	public static class UserDataEntry {
 		
 		//Use this info to get a list of the unique user IDs. This can then be used to generate specific metrics for each user
-		public static final String LIST_UNIQUE_USER = "SELECT user_dim.app_info.app_instance_id as User, user_dim.device_info. " + 
-		"mobile_marketing_name as DeviceName, user_dim.device_info.platform_version as Version " +
-		"FROM " +
-		"TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s')) " +
-		"GROUP BY User, DeviceName, Version";
+		public static final String LIST_UNIQUE_USER = "SELECT user_dim.app_info.app_instance_id as User, user_dim.device_info.mobile_marketing_name as DeviceName,\n" + 
+				"  user_dim.device_info.platform_version as Version \n" + 
+				"		FROM\n" + 
+				"		TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"		GROUP BY User, DeviceName, Version";
 		
 		public static final String USER_USAGE_INFO = "SELECT Event, date(thing1) as Date, thing1 as Raw, Class, EngagementTime\n" + 
 				"FROM FLATTEN(FLATTEN(SELECT event_dim.name as Event, event_dim.timestamp_micros as thing1, event_dim.params.value.string_value as Class,\n" + 
