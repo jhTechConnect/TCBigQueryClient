@@ -22,6 +22,42 @@ public class Queries {
 	
 	private static String EXPORT_DIRECTORY ="";
 	
+	private static void writeBasicResults(File file, QueryResult result) {
+		 try {
+			 CSVWriter writer = new CSVWriter(new FileWriter(file));
+		    List<Field> fields = result.getSchema().getFields();
+		    
+		    //Get the column names of the result
+		    ArrayList<String> dataRow = new ArrayList<String>();
+		    for (Field f : fields) {
+		    	dataRow.add(f.getName());
+		    }
+		    String[] dataRowArray = new String[dataRow.size()];
+		    dataRowArray = dataRow.toArray(dataRowArray);
+		    writer.writeNext(dataRowArray);
+		    dataRow.clear();
+		    
+		    while (result != null) {
+		    	  Iterator<List<FieldValue>> iter = result.iterateAll();
+		    	  while (iter.hasNext()) {
+		    	    List<FieldValue> row = iter.next();
+		    	    
+		    	    for (FieldValue f : row) {
+		    	    		dataRow.add(f.getStringValue());
+		    	    }
+		    	    dataRowArray = new String[dataRow.size()];
+				    dataRowArray = dataRow.toArray(dataRowArray);
+				    writer.writeNext(dataRowArray);
+				    dataRow.clear();
+		    	  }
+		    	  result = result.getNextPage();
+		    }
+		    
+		    writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	public static void setExportDirectory(String dir) {
 		EXPORT_DIRECTORY=dir;
 	}
@@ -95,7 +131,7 @@ public class Queries {
 		try {
 			result = Utilities.completeQuery(bigquery,query);
 			//Prepare CSVWriter in order to write output
-		    File file = new File(EXPORT_DIRECTORY, String.format("%s_usage.csv",id));
+		    File file = new File(EXPORT_DIRECTORY, String.format("%s_Engagement.csv",id));
 		    CSVWriter writer = new CSVWriter(new FileWriter(file));
 		    List<Field> fields = result.getSchema().getFields();
 		    
@@ -118,7 +154,7 @@ public class Queries {
 	    	    		dataRow.add(row.get(i).getStringValue());
 		    	    }
 		    	    
-		    	    if (dataRow.get(0).equals("session_start")) {
+		    	    if (dataRow.get(0).equals("app_open")) {
 		    	    	dataRow.add("");
 		    	    } else {
 		    	    	dataRow.add(row.get(4).getStringValue());
@@ -137,7 +173,91 @@ public class Queries {
 			e.printStackTrace();
 		}
 	}
+
+	public static void writeUserStartSessionData(BigQuery bigquery, String id, String startDate, String endDate) {
+		setupDateTable(bigquery,startDate,endDate);
+		String query = String.format(TCBigQueryContract.UserDataEntry.START_SESSIONS, startDate,endDate,id);
+
+		QueryResult result;
+		
+		try {
+			result = Utilities.completeQuery(bigquery,query);
+			
+			//Prepare CSVWriter in order to write output
+		    File file = new File(EXPORT_DIRECTORY, String.format("%s_StartSessions.csv",id));
+		    writeBasicResults(file, result);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
+	public static void writeUserCompleteSessionData(BigQuery bigquery, String id, String startDate, String endDate) {
+		setupDateTable(bigquery,startDate,endDate);
+		String query = String.format(TCBigQueryContract.UserDataEntry.COMPLETE_SESSIONS, startDate,endDate,id);
+
+		QueryResult result;
+		
+		try {
+			result = Utilities.completeQuery(bigquery,query);
+			
+			//Prepare CSVWriter in order to write output
+		    File file = new File(EXPORT_DIRECTORY, String.format("%s_CompleteSessions.csv",id));
+		    writeBasicResults(file, result);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeUserSessionDurationData(BigQuery bigquery, String id, String startDate, String endDate) {
+		setupDateTable(bigquery,startDate,endDate);
+		String query = String.format(TCBigQueryContract.UserDataEntry.SESSION_DURATION, startDate,endDate,id, startDate, endDate, id);
+
+		QueryResult result;
+		
+		try {
+			result = Utilities.completeQuery(bigquery,query);
+			
+			//Prepare CSVWriter in order to write output
+		    File file = new File(EXPORT_DIRECTORY, String.format("%s_SessionDuration.csv",id));
+		    writeBasicResults(file, result);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeUserRepairSessionData(BigQuery bigquery, String id, String startDate, String endDate) {
+		setupDateTable(bigquery,startDate,endDate);
+		String query = String.format(TCBigQueryContract.UserDataEntry.ALL_REPAIR_SESSIONS, startDate,endDate,id);
+
+		QueryResult result;
+		
+		try {
+			result = Utilities.completeQuery(bigquery,query);
+			
+			//Prepare CSVWriter in order to write output
+		    File file = new File(EXPORT_DIRECTORY, String.format("%s_RepairSessions.csv",id));
+		    writeBasicResults(file, result);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeUserAppOpenData(BigQuery bigquery, String id, String startDate, String endDate) {
+		setupDateTable(bigquery,startDate,endDate);
+		String query = String.format(TCBigQueryContract.UserDataEntry.APP_OPEN, startDate,endDate,id);
+
+		QueryResult result;
+		
+		try {
+			result = Utilities.completeQuery(bigquery,query);
+			
+			//Prepare CSVWriter in order to write output
+		    File file = new File(EXPORT_DIRECTORY, String.format("%s_AppOpen.csv",id));
+		    writeBasicResults(file, result);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	public static void writeCommentData(BigQuery bigquery,String startDate, String endDate, boolean all) {
 		//Get the appropriate query based on the dates
 		setupDateTable(bigquery,startDate,endDate);
@@ -209,7 +329,7 @@ public class Queries {
 	public static List<User> getUserList(BigQuery bq, String startDate, String endDate) throws TimeoutException, InterruptedException {
 		//Get the appropriate query based on the dates
 		setupDateTable(bq,startDate,endDate);
-		String query = String.format(TCBigQueryContract.UserDataEntry.LIST_UNIQUE_USER, startDate,endDate);
+		String query = String.format(TCBigQueryContract.UserDataEntry.LIST_UNIQUE_USER, startDate,endDate, startDate);
 		QueryResult result;
 		
 		try {

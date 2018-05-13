@@ -33,25 +33,30 @@ public class TCBigQueryClient {
 		Queries.setExportDirectory(EXPORT_DIRECTORY);
 		BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
 		
-		
+		/*
 		//Complete all population-based metrics for the study
 		//Write all session events to CSV file
 	    Queries.writeAllSessionEvents(bigquery,"2017-06-01","2017-06-30");
-	   
+	   */
 	    //Complete all individual-based data
 		//Get list of unique users
-		List<User> users = Queries.getUserList(bigquery,"2017-06-10","2017-06-21");
-		
+		List<User> users = Queries.getUserList(bigquery,"2018-02-26","2018-03-10");
 		//Use ids to get all info related to individual technician
 		for (User u : users) {
 			System.out.println(u.getId());
-			Queries.writeAllUserSessionEvents(bigquery,u.getId(),"2017-06-01","2017-06-11");
-			Queries.writeUserUsageData(bigquery,u.getId(),"2017-06-10","2017-06-21");
+			Queries.writeUserUsageData(bigquery,u.getId(),"2018-02-26","2018-05-11");
+			Queries.writeUserStartSessionData(bigquery,u.getId(),"2018-02-26","2018-05-11");
+			Queries.writeUserCompleteSessionData(bigquery,u.getId(),"2018-02-26","2018-05-11");
+			Queries.writeUserSessionDurationData(bigquery,u.getId(),"2018-02-26","2018-05-11");
+			Queries.writeUserRepairSessionData(bigquery,u.getId(),"2018-02-26","2018-05-11");
+			Queries.writeUserAppOpenData(bigquery,u.getId(),"2018-02-26","2018-05-11");
 		}
 		
 
 		//Get comments posted
+		/*
 		Queries.writeCommentData(bigquery,"2017-01-01","2017-06-11", false);
+		*/
 		
 	}
 }

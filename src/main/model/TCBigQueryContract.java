@@ -213,18 +213,20 @@ public class TCBigQueryContract {
 	public static class UserDataEntry {
 		
 		//Use this info to get a list of the unique user IDs. This can then be used to generate specific metrics for each user
-		public static final String LIST_UNIQUE_USER = "SELECT user_dim.app_info.app_instance_id as User, user_dim.device_info.mobile_marketing_name as DeviceName,\n" + 
-				"  user_dim.device_info.platform_version as Version \n" + 
+		public static final String LIST_UNIQUE_USER = "SELECT user_dim.app_info.app_instance_id as User, user_dim.geo_info.country as Country, user_dim.device_info.mobile_marketing_name as DeviceName, user_dim.device_info.mobile_model_name as Model, \n" + 
+				"  user_dim.device_info.platform_version as Version, date(user_dim.first_open_timestamp_micros) as FirstOpen,\n" + 
 				"		FROM\n" + 
 				"		TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
-				"		GROUP BY User, DeviceName, Version";
+				"    WHERE user_dim.geo_info.country = 'Rwanda' AND TIMESTAMP(user_dim.first_open_timestamp_micros) > TIMESTAMP('%s')\n" + 
+				"		GROUP BY User, Country, DeviceName, Model, Version, FirstOpen\n" + 
+				"    Order BY FirstOpen";
 		
 		public static final String USER_USAGE_INFO = "SELECT Event, date(thing1) as Date, thing1 as Raw, Class, EngagementTime\n" + 
 				"FROM FLATTEN(FLATTEN(SELECT event_dim.name as Event, event_dim.timestamp_micros as thing1, event_dim.params.value.string_value as Class,\n" + 
 				"                    FROM\n" + 
 				"						        TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
-				"						        WHERE user_dim.app_info.app_instance_id = '%s' AND (event_dim.name = 'user_engagement' OR event_dim.name = 'session_start')\n" + 
-				"						        AND event_dim.params.key = 'firebase_screen_class', event_dim.params.value),event_dim) t1,\n" + 
+				"						        WHERE user_dim.app_info.app_instance_id = '%s' AND ((event_dim.name = 'user_engagement'\n" + 
+				"						        AND event_dim.params.key = 'firebase_screen_class') OR (event_dim.name = 'app_open' AND event_dim.params.value.string_value = 'app')), event_dim.params.value),event_dim) t1,\n" + 
 				"              LEFT JOIN\n" + 
 				"              FLATTEN(FLATTEN(SELECT event_dim.timestamp_micros as thing2,event_dim.params.value.int_value as EngagementTime,\n" + 
 				"              FROM\n" + 
@@ -233,5 +235,49 @@ public class TCBigQueryContract {
 				"              AND event_dim.params.key = 'engagement_time_msec', event_dim.params.value),event_dim) t2\n" + 
 				"              On t1.thing1 = t2.thing2\n" + 
 				"              ORDER BY thing1";
+	
+		// Get all tcsession_start events
+		public static final String START_SESSIONS = "SELECT Date(thing1) as Date, Flowchart\n" + 
+				"FROM FLATTEN(FLATTEN(SELECT event_dim.timestamp_micros as thing1, event_dim.params.value.string_value as Flowchart\n" + 
+				"      FROM\n" + 
+				"      TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"      WHERE event_dim.name = 'tcsession_start' AND user_dim.app_info.app_instance_id = '%s'\n" + 
+				"      AND event_dim.params.key = 'item_name', event_dim.params.value),event_dim) t1\n" + 
+				"ORDER BY thing1\n";
+		
+		// Get all session complete events
+		public static final String COMPLETE_SESSIONS = "SELECT date(thing1) as Date, Flowchart\n" + 
+				"FROM FLATTEN(FLATTEN(SELECT event_dim.timestamp_micros as thing1, event_dim.params.value.string_value as Flowchart\n" + 
+				"      FROM\n" + 
+				"      TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"      WHERE event_dim.name = 'tcsession_complete' AND user_dim.app_info.app_instance_id = '%s'\n" + 
+				"      AND event_dim.params.key = 'item_name', event_dim.params.value),event_dim) t1\n" + 
+				"ORDER BY thing1\n";
+		
+		// Session Duration for completed sessions
+		public static final String SESSION_DURATION = "SELECT Date(thing1) as Date, Flowchart, Duration\n" + 
+				"FROM FLATTEN(FLATTEN(SELECT event_dim.timestamp_micros as thing1, event_dim.params.value.string_value as Flowchart\n" + 
+				"      FROM TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"      WHERE event_dim.name = \"tcsession_duration\" AND event_dim.params.key = \"item_name\" AND user_dim.app_info.app_instance_id = '%s', event_dim.params.value), event_dim) t1 \n" + 
+				"      JOIN\n" + 
+				"      FLATTEN(FLATTEN(SELECT event_dim.timestamp_micros as thing3, event_dim.params.value.int_value as Duration\n" + 
+				"            FROM TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"            WHERE event_dim.name = \"tcsession_duration\" AND event_dim.params.key = \"value\" AND user_dim.app_info.app_instance_id = '%s', event_dim.params.value), event_dim) t3\n" + 
+				"      ON t1.thing1 = t3.thing3\n" + 
+				"ORDER BY thing1";
+		
+		// All Repair sessions
+		public static final String ALL_REPAIR_SESSIONS = "SELECT Date(thing1) as Date, Flowchart\n" + 
+				"FROM FLATTEN(FLATTEN(SELECT event_dim.timestamp_micros as thing1, event_dim.params.value.string_value as Flowchart\n" + 
+				"      FROM TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"      WHERE event_dim.name = \"tcsession_contiguous_duration\" AND event_dim.params.key = \"item_name\" AND user_dim.app_info.app_instance_id = '%s', event_dim.params.value), event_dim)\n" + 
+				"ORDER BY thing1";
+		
+		// All app_open events
+		public static final String APP_OPEN = "SELECT Date(event_dim.timestamp_micros) as Date\n" + 
+				"      FROM TABLE_DATE_RANGE(org_techconnect_ANDROID.app_events_, TIMESTAMP('%s'), TIMESTAMP('%s'))\n" + 
+				"      WHERE event_dim.name = \"app_open\" AND user_dim.app_info.app_instance_id = '%s'\n" + 
+				"ORDER BY Date ";
+		
 	}
 }
